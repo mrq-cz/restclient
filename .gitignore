@@ -1,0 +1,8 @@
+target/
+tmp/
+assets/
+.idea/
+.DS_Store
+*.iml
+*~
+Thumbs.db
