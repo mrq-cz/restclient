@@ -18,9 +18,13 @@
     {{view Ember.Select contentBinding="Methods" selectionBinding="method" optionLabelPath="content" optionValuePath="content"}}
     <ul>
     {{#each item in History}}
-        <li><button {{action 'remove' item}}>✗</button> {{item.method}} {{item.url}}</li>
+        <li {{action select item}}><button {{action 'remove' item}}>✗</button> {{item.method}} {{item.url}}</li>
     {{/each}}
     </ul>
+
+    <div>
+        Selected: {{selected.url}}
+    </div>
   </script>
 
   <script src="js/libs/jquery-1.10.2.js"></script>

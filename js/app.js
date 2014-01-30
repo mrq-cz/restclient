@@ -30,12 +30,21 @@ App.IndexController = Ember.Controller.extend({
     url: '',
     method: 'GET',
 
+    selected: Call.create(),
+
+    select: function(call) {
+        this.set('selected', call);
+    },
+
     remove: function(call) {
+        if (this.selected == call) this.set('selected', null);
         History.removeObject(call);
     },
 
     call: function() {
-        History.addObject(Call.create({url:this.url,method:this.method}));
+        var call = Call.create({url:this.url,method:this.method});
+        this.set('selected', call);
+        History.addObject(call);
         this.url = '';
     }
 });
