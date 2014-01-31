@@ -9,7 +9,8 @@ Message = Ember.Object.extend({
 });
 
 Response = Message.extend({
-    code: null
+    code: null,
+    xhr: null
 });
 
 Call = Ember.Object.extend({
@@ -27,7 +28,6 @@ History = Ember.ArrayController.create();
 App.IndexController = Ember.Controller.extend({
     url: '',
     method: 'GET',
-
     body: '',
 
     selected: Call.create(),
@@ -71,8 +71,13 @@ App.IndexController = Ember.Controller.extend({
                     }
                     call.set('response.body',body);
                 },
+                error: function(xhr) {
+                    call.set('response.body',xhr.responseText);
+                },
                 complete: function(xhr, status) {
                     call.set('response.code',xhr.status);
+                    call.set('response.xhr',xhr);
+                    call.set('response.headers',Helper.parseHeaders(xhr.getAllResponseHeaders()));
                 }
 
             });
@@ -101,8 +106,20 @@ App.Router.map(function() {
 
 App.IndexRoute = Ember.Route.extend({
     setupController: function(controller, model) {
-        var call = Call.create();
-        call.set('url','url0');
-        History.addObjects([call, Call.create({url:'url1'}), Call.create().set('url','url2')]);
     }
 });
+
+
+//.. helpers ................................................
+
+Helper = {
+    parseHeaders: function(string) {
+        var headers = [], ha = string.split("\n");
+        ha.forEach(function (h) {
+            if (!h || h.trim() == "") return;
+            var hp = { name: h.split(':',1)[0], value: h.substr(h.indexOf(':')+1).trim() };
+            headers.push(hp);
+        });
+        return headers;
+    }
+}

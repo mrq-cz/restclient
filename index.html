@@ -26,13 +26,17 @@
         {{/each}}
     </ul>
 
-    <div style="width: 100%">
-        <div style="width: 50%">
+    <div>
         <h3>Request:</h3>
         {{textarea value=body}}
-        <h3>Response:</h3>
-        <p>Code: {{selected.response.code}}</p>
+        <h3>Response: {{selected.response.code}}</h3>
         <pre>{{selected.response.body}}</pre>
+        <p>Headers:</p>
+        <table>
+            {{#each item in selected.response.headers}}
+                <tr><td>{{item.name}}</td><td>{{item.value}}</td></tr>
+            {{/each}}
+        </table>
     </div>
 </script>
 
