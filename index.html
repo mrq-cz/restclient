@@ -1,37 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Ember Starter Kit</title>
-  <link rel="stylesheet" href="css/normalize.css">
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="utf-8">
+    <title>REST client</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="http://cdn.jsdelivr.net/codemirror/3.14.0/codemirror.css" rel="stylesheet">
 </head>
 <body>
-  <script type="text/x-handlebars">
+<script type="text/x-handlebars">
     <h2>REST client</h2>
 
     {{outlet}}
-  </script>
+</script>
 
-  <script type="text/x-handlebars" id="index">
-    {{input value=url action="call"}}
-    {{view Ember.Select contentBinding="Methods" selectionBinding="method" optionLabelPath="content" optionValuePath="content"}}
+<script type="text/x-handlebars" id="index">
+    {{view Ember.Select contentBinding="Methods" selectionBinding="method"
+        optionLabelPath="content" optionValuePath="content"}}
+    {{input value=url action="call"}}<button {{action call}}>send</button><button {{action clean}}>new</button>
     <ul>
-    {{#each item in History}}
-        <li {{action select item}}><button {{action 'remove' item}}>✗</button> {{item.method}} {{item.url}}</li>
-    {{/each}}
+        {{#each item in History}}
+            <li {{action select item}}>
+                <button {{action remove item}}>✗</button> {{item.method}} {{item.url}}
+            </li>
+        {{/each}}
     </ul>
 
-    <div>
-        Selected: {{selected.url}}
+    <div style="width: 100%">
+        <div style="width: 50%">
+        <h3>Request:</h3>
+        {{textarea value=body}}
+        <h3>Response:</h3>
+        <p>Code: {{selected.response.code}}</p>
+        <pre>{{selected.response.body}}</pre>
     </div>
-  </script>
+</script>
 
-  <script src="js/libs/jquery-1.10.2.js"></script>
-  <script src="js/libs/handlebars-1.1.2.js"></script>
-  <script src="js/libs/ember-1.3.1.js"></script>
-  <script src="js/app.js"></script>
-  <!-- to activate the test runner, add the "?test" query string parameter -->
-  <script src="tests/runner.js"></script>
+<script src="js/libs/jquery-1.10.2.js"></script>
+<script src="js/libs/handlebars-1.1.2.js"></script>
+<script src="js/libs/ember-1.3.1.js"></script>
+<script src="http://cdn.jsdelivr.net/codemirror/3.14.0/codemirror.js"></script>
+<script src="js/app.js"></script>
+<!-- to activate the test runner, add the "?test" query string parameter -->
+<script src="tests/runner.js"></script>
 </body>
 </html>
