@@ -24,6 +24,7 @@ Call = Ember.Object.extend({
 
 Methods = Ember.ArrayController.create({content:['GET','POST','DELETE','PUT']});
 History = Ember.ArrayController.create();
+Headers = Ember.ArrayController.create({content:[{name: 'header',value: 'value'}]});
 
 App.IndexController = Ember.Controller.extend({
     url: '',
@@ -85,12 +86,30 @@ App.IndexController = Ember.Controller.extend({
 
         clean: function() {
             this.setProperties({url: '', method: 'GET', body: ''})
+        },
+
+        addHeader : function () {
+            Headers.addObject({name: '', value: ''})
+        },
+
+        removeHeader: function(header) {
+            Headers.removeObject(header);
         }
+    }
+});
+
+App.HeadersController = Ember.Controller.extend({
+    templateName: 'headers',
+    actions: {
     }
 });
 
 
 //.. view ..................................................
+
+HeadersView = Ember.View.extend({
+    templateName: 'headers'
+});
 
 CodeMirrorView = Ember.TextArea.extend({
     didInsertElement: function() {
@@ -122,4 +141,8 @@ Helper = {
         });
         return headers;
     }
-}
+};
+
+Ember.TextField.reopen({
+    attributeBindings: ['list']
+});

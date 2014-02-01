@@ -49,7 +49,9 @@
             </table>
             <h3>Request:</h3>
             {{textarea value=body}}
+            {{view HeadersView}}
         </div>
+
         <div class="large-8 medium-12 columns">
             {{#if selected}}
                 <h3>Response: {{selected.response.code}}</h3>
@@ -63,6 +65,29 @@
             {{/if}}
         </div>
     </div>
+</script>
+
+<script type="text/x-handlebars" id="headers">
+    <table>
+    {{#each h in Headers}}
+        <tr>
+            <td>
+                <div class="input-inline">{{view Ember.TextField value=h.name list="headers" }}</div>
+            </td>
+            <td>
+                <div class="input-inline">{{view Ember.TextField value=h.value class="input-inline"}}</div>
+            </td>
+            <td>
+                <a {{action removeHeader h}}> <i class="fi-x"></i></a>
+            </td>
+        </tr>
+    {{/each}}
+    </table>
+    <a {{action addHeader}}><i class="fi-plus"></i>header</a>
+    <datalist id=headers >
+        <option> Google
+        <option> IE9
+    </datalist>
 </script>
 
 <script src="js/libs/jquery-1.10.2.js"></script>
