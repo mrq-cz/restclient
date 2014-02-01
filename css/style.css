@@ -2,3 +2,27 @@
 .ember-application {
     margin: 20px;
 }
+
+.fullWidth  {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: initial;
+}
+
+.method {
+    width: 10em;
+}
+
+.foreground {
+    z-index: 10;
+}
+
+.over {
+    word-break: break-all;
+}
+
+textarea {
+    height: auto;
+    min-height: 100px;
+}

@@ -30,7 +30,7 @@ App.IndexController = Ember.Controller.extend({
     method: 'GET',
     body: '',
 
-    selected: Call.create(),
+    selected: null,
 
     actions : {
         select: function(call) {
