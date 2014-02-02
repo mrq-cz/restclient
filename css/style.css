@@ -18,13 +18,20 @@
     z-index: 10;
 }
 
+@media only screen and (min-width: 64.063em) { 
+    .response {
+        padding-left: 1.5em !important; 
+    }
+}
+
 .over {
     word-break: break-all;
 }
 
 textarea {
     height: auto;
-    min-height: 100px;
+    min-height: 105px;
+    font-family: courier, monospace;
 }
 
 .condense {
@@ -41,4 +48,18 @@ table tr td {
     padding: 0.2625rem 0.325rem;
     font-size: 0.875rem;
     color: #222222;
+}
+
+pre {
+    font-size: 0.9em;
+    font-weight: lighter;
+    font-family: courier, monospace, serif;
+}
+
+.clickable tr:hover, .clickable tr:nth-of-type(even):hover { 
+    cursor: pointer;
+    background-color: #EEE;
+    -webkit-transition: background-color 300ms ease-out;
+    -moz-transition: background-color 300ms ease-out;
+    transition: background-color 300ms ease-out;
 }

@@ -22,14 +22,19 @@ Call = Ember.Object.extend({
 
 //.. controller ............................................
 
-Methods = Ember.ArrayController.create({content:['GET','POST','DELETE','PUT']});
+Methods = Ember.ArrayController.create({
+    content:['GET','POST','PUT','DELETE']
+});
+CommonHeaders = Ember.ArrayController.create({
+    content:['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
+});
 History = Ember.ArrayController.create();
-Headers = Ember.ArrayController.create({content:[{name: 'header',value: 'value'}]});
 
 App.IndexController = Ember.Controller.extend({
     url: '',
     method: 'GET',
     body: '',
+    headers: Ember.ArrayController.create({content:[]}),
 
     selected: null,
 
@@ -39,6 +44,7 @@ App.IndexController = Ember.Controller.extend({
             this.set('url',call.url);
             this.set('method',call.method);
             this.set('body',call.request.body);
+            this.set('headers.content',Helper.cloneHeaders(call.request.headers));
         },
 
         remove: function(call) {
@@ -47,22 +53,30 @@ App.IndexController = Ember.Controller.extend({
         },
 
         call: function() {
+            var headers = this.headers.toArray();
+            headers.removeArrayObserver();
             var call = Call.create(
                 {
                     url: this.url,
                     method: this.method,
                     request: Message.create({
-                        body: this.body
+                        body: this.body,
+                        headers: headers
                     }),
                     response: Response.create()
                 }
             );
             call.get('request').set('body', this.body);
-            this.set('selected', call);
             History.addObject(call);
+            this.send('select',call);
             $.ajax({
                 url: this.url,
                 type: this.method,
+                beforeSend: function(xhr) { 
+                    headers.toArray().forEach(function(h) {
+                        xhr.setRequestHeader(h.name, h.value);    
+                    });
+                },
                 success: function(data, status) {
                     var body;
                     if (typeof data == "object") {
@@ -85,15 +99,17 @@ App.IndexController = Ember.Controller.extend({
         },
 
         clean: function() {
-            this.setProperties({url: '', method: 'GET', body: ''})
+            this.setProperties({url: '', method: 'GET', body: '', })
+            this.set('headers.content',[])
+            this.set('selected', null);
         },
 
         addHeader : function () {
-            Headers.addObject({name: '', value: ''})
+            this.headers.addObject({name: '', value: ''})
         },
 
         removeHeader: function(header) {
-            Headers.removeObject(header);
+            this.headers.removeObject(header);
         }
     }
 });
@@ -111,9 +127,51 @@ HeadersView = Ember.View.extend({
     templateName: 'headers'
 });
 
-CodeMirrorView = Ember.TextArea.extend({
+ResponseView = Ember.View.extend({
+    templateName: 'response',
+
+    headers: false,
+
+    actions: {
+        toggle : function() {
+            this.set('headers', !this.headers);
+        },
+        empty : function() {
+            return this.get('controller.headers').toArray().size < 1;
+        }   
+    }
+});
+
+TextAreaView = Ember.TextArea.extend({
     didInsertElement: function() {
-        this.codeMirror = CodeMirror.fromTextArea(this.get('element'));
+        $(this.get('element')).on('keydown',function(e) {
+            var o=this;
+            var kC = e.keyCode ? e.keyCode : e.charCode ? e.charCode : e.which;
+            if (kC == 9 && !e.shiftKey && !e.ctrlKey && !e.altKey)
+            {
+                var oS = o.scrollTop;
+                if (o.setSelectionRange)
+                {
+                    var sS = o.selectionStart;
+                    var sE = o.selectionEnd;
+                    o.value = o.value.substring(0, sS) + "\t" + o.value.substr(sE);
+                    o.setSelectionRange(sS + 1, sS + 1);
+                    o.focus();
+                }
+                else if (o.createTextRange)
+                {
+                    document.selection.createRange().text = "\t";
+                    e.returnValue = false;
+                }
+                o.scrollTop = oS;
+                if (e.preventDefault)
+                {
+                    e.preventDefault();
+                }
+                return false;
+            }
+            return true;
+        });
     }
 });
 
@@ -140,9 +198,19 @@ Helper = {
             headers.push(hp);
         });
         return headers;
+    },
+    cloneHeaders: function(headers) {
+        var hs = [];
+        headers.forEach(function (h) {
+            hs.push({name: h.name, value: h.value})
+        });
+        return hs;
     }
+
 };
 
 Ember.TextField.reopen({
     attributeBindings: ['list']
 });
+
+Array.prototype.clone = function() { return jQuery.extend(true, {}, this); }

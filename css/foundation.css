@@ -127,7 +127,7 @@ select {
   margin-right: auto;
   margin-top: 0;
   margin-bottom: 0;
-  max-width: 62.5em;
+  max-width: 85.5em;
   *zoom: 1; }
   .row:before, .row:after {
     content: " ";
@@ -145,8 +145,8 @@ select {
     margin-right: 0; }
   .row .row {
     width: auto;
-    margin-left: -0.9375em;
-    margin-right: -0.9375em;
+    margin-left: -0.7em;
+    margin-right: -0.7em;
     margin-top: 0;
     margin-bottom: 0;
     max-width: none;
@@ -170,8 +170,8 @@ select {
 .column,
 .columns {
   position: relative;
-  padding-left: 0.9375em;
-  padding-right: 0.9375em;
+  padding-left: 0.7em;
+  padding-right: 0.7em;
   width: 100%;
   float: left; }
 
@@ -306,8 +306,8 @@ select {
   .column,
   .columns {
     position: relative;
-    padding-left: 0.9375em;
-    padding-right: 0.9375em;
+    padding-left: 0.7em;
+    padding-right: 0.7em;
     float: left; }
 
   .small-1 {
@@ -546,8 +546,8 @@ select {
   .column,
   .columns {
     position: relative;
-    padding-left: 0.9375em;
-    padding-right: 0.9375em;
+    padding-left: 0.7em;
+    padding-right: 0.7em;
     float: left; }
 
   .medium-1 {
@@ -896,8 +896,8 @@ select {
   .column,
   .columns {
     position: relative;
-    padding-left: 0.9375em;
-    padding-right: 0.9375em;
+    padding-left: 0.7em;
+    padding-right: 0.7em;
     float: left; }
 
   .large-1 {
@@ -1372,7 +1372,7 @@ meta.foundation-mq-topbar {
       background: #333333; }
 
   .contain-to-grid .top-bar {
-    max-width: 62.5em;
+    max-width: 85.5em;
     margin: 0 auto;
     margin-bottom: 0; }
 
@@ -2339,15 +2339,15 @@ button, .button {
   .tabs-content > .content {
     display: none;
     float: left;
-    padding: 0.9375em 0; }
+    padding: 0.7em 0; }
     .tabs-content > .content.active {
       display: block; }
     .tabs-content > .content.contained {
-      padding: 0.9375em; }
+      padding: 0.7em; }
   .tabs-content.vertical {
     display: block; }
     .tabs-content.vertical > .content {
-      padding: 0 0.9375em; }
+      padding: 0 0.7em; }
 
 @media only screen and (min-width: 40.063em) {
   .tabs.vertical {
@@ -2448,7 +2448,7 @@ ul.pagination {
         background: #e3e3e3; }
   .accordion .content {
     display: none;
-    padding: 0.9375em; }
+    padding: 0.7em; }
     .accordion .content.active {
       display: block;
       background: white; }

@@ -3,12 +3,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>REST client</title>
+    <title>restclient</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/foundation.css" />
     <link rel="stylesheet" href="css/fonts/foundation-icons.css" />
     <link rel="stylesheet" href="css/pace.css">
-    <link href="http://cdn.jsdelivr.net/codemirror/3.14.0/codemirror.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -36,40 +37,59 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row collapse">
         <div class="large-4 medium-12 columns foreground">
-            <table class="small-12">
+            <table class="clickable small-12">
             {{#each item in History}}
                 <tr {{action select item}}>
                     <td class="small-1"><span class="label">{{item.method}}</span></td>
                     <td class="small-10"><div class="over">{{item.url}}</div></td>
-                    <td class="small-1 text-right"><a {{action remove item}}><i class="fi-x"></i></a></td>
+                    <td class="small-1 text-right">
+                        <a {{action remove item}}><i class="fi-x"></i></a>
+                    </td>
                 </tr>
             {{/each}}
             </table>
-            <h3>Request:</h3>
-            {{textarea value=body}}
+
+            <h4>request</h4>
+            {{view TextAreaView value=body}}
             {{view HeadersView}}
         </div>
-
-        <div class="large-8 medium-12 columns">
+        <div class="large-8 medium-12 columns response">
             {{#if selected}}
-                <h3>Response: {{selected.response.code}}</h3>
-                <table>
-                    {{#each item in selected.response.headers}}
-                    <tr><td>{{item.name}}</td><td>{{item.value}}</td></tr>
-                    {{/each}}
-                </table>
-
-                <pre>{{selected.response.body}}</pre>
+                {{view ResponseView}}
             {{/if}}
         </div>
     </div>
 </script>
 
+<script type="text/x-handlebars" id="response">
+    <div class="clearfix">
+        <h4 class="left">response {{selected.response.code}}</h4>
+        <a class="button tiny right" {{action remove selected}}>
+            <i class="fi-x" ></i>
+        </a>
+        <a class="button secondary tiny right" {{action toggle target="view"}}>
+            <i class="fi-list-thumbnails" ></i>
+        </a>
+    </div>
+    {{#if view.headers}}
+        <table class="small-12">
+        {{#if selected.response.headers}}
+            {{#each item in selected.response.headers}}
+                <tr><td>{{item.name}}</td><td>{{item.value}}</td></tr>
+            {{/each}}
+        {{else}}
+            <tr><td><i>no headers</i></td><td></td></tr>
+        {{/if}}
+        </table>
+    {{/if}}
+    <pre>{{selected.response.body}}</pre>
+</script>
+
 <script type="text/x-handlebars" id="headers">
-    <table>
-    {{#each h in Headers}}
+    <table class="small-12">
+    {{#each h in headers}}
         <tr>
             <td>
                 <div class="input-inline">{{view Ember.TextField value=h.name list="headers" }}</div>
@@ -83,10 +103,13 @@
         </tr>
     {{/each}}
     </table>
-    <a {{action addHeader}}><i class="fi-plus"></i>header</a>
+    <div style="margin-bottom: 1.5em;">
+        <a {{action addHeader}}><i class="fi-plus"></i> header</a>
+    </div>
     <datalist id=headers >
-        <option> Google
-        <option> IE9
+        {{#each ch in CommonHeaders}}
+            <option>{{ch}}
+        {{/each}}
     </datalist>
 </script>
 
@@ -95,7 +118,6 @@
 <script src="js/libs/ember-1.3.1.js"></script>
 <script src="js/libs/foundation.min.js"></script>
 <script src="js/libs/pace.min.js"></script>
-<script src="http://cdn.jsdelivr.net/codemirror/3.14.0/codemirror.js"></script>
 <script src="js/app.js"></script>
 <!-- to activate the test runner, add the "?test" query string parameter -->
 <script src="tests/runner.js"></script>
