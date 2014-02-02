@@ -30,30 +30,52 @@
 
 textarea {
     height: auto;
-    min-height: 105px;
-    font-family: courier, monospace;
+    font-size: 0.8em;
+    min-height: 110px;
+    font-family: Consolas,Menlo,'Meslo',courier, monospace;
 }
 
 .condense {
     margin: 0 !important;
 }
 
+button, .button {
+    margin: 0;
+}
+
 .input-inline > input[type="text"] {
     background-color: transparent;
+    font-size: 1em;
+    height: 1.5rem;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0);
     border: 0;
     margin: 0 !important;
+    padding-bottom: 0;
+    padding-top: 0;
+    -webkit-transition: -webkit-box-shadow 0.45s, border-color 0.45s ease-in-out;
+}
+
+.input-inline > input[type="text"]:focus {
+    background-color: #EEE;    
 }
 
 table tr td {
     padding: 0.2625rem 0.325rem;
-    font-size: 0.875rem;
+    font-size: 0.775rem;
     color: #222222;
 }
 
+h4 {
+    font-size: 0.75rem;
+    font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
 pre {
-    font-size: 0.9em;
-    font-weight: lighter;
-    font-family: courier, monospace, serif;
+    font-size: 0.8em;
+    font-family: Consolas,Menlo,'Meslo',courier, monospace, serif;
 }
 
 .clickable tr:hover, .clickable tr:nth-of-type(even):hover { 
@@ -62,4 +84,9 @@ pre {
     -webkit-transition: background-color 300ms ease-out;
     -moz-transition: background-color 300ms ease-out;
     transition: background-color 300ms ease-out;
+}
+
+.server {
+    font-size: 0.7rem;
+    color: #666;    
 }

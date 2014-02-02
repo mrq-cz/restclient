@@ -17,7 +17,18 @@ Call = Ember.Object.extend({
     method: 'GET',
     url: '',
     request: {},
-    response: {}
+    response: {},
+
+    serverPath: function() {
+        var i, url = this.get('url');
+        if ((i = url.indexOf('://')) > 0) {
+            url = url.substr(i+3);
+            i = url.indexOf('/');
+            return { server: url.substr(0,i), path: url.substr(i) };
+        } else {
+            return { server: null, path: url };
+        }
+    }.property('url')
 });
 
 //.. controller ............................................
@@ -38,6 +49,10 @@ App.IndexController = Ember.Controller.extend({
 
     selected: null,
 
+    success: function() {
+            return this.get('selected.response.code') < 300 ? "label success" : "label alert";    
+    }.property('selected.response.code'),
+
     actions : {
         select: function(call) {
             this.set('selected', call);
@@ -53,7 +68,9 @@ App.IndexController = Ember.Controller.extend({
         },
 
         call: function() {
+            this.set('headers.content',Helper.prepareHeaders(this.headers));
             var headers = this.headers.toArray();
+            Helper.prepareHeaders(headers);
             headers.removeArrayObserver();
             var call = Call.create(
                 {
@@ -72,6 +89,7 @@ App.IndexController = Ember.Controller.extend({
             $.ajax({
                 url: this.url,
                 type: this.method,
+                data: this.body,
                 beforeSend: function(xhr) { 
                     headers.toArray().forEach(function(h) {
                         xhr.setRequestHeader(h.name, h.value);    
@@ -175,6 +193,12 @@ TextAreaView = Ember.TextArea.extend({
     }
 });
 
+FocusTextField = Ember.TextField.extend({
+    becomeFocused: function() {
+        this.$().focus();
+    }.on('didInsertElement')
+});
+
 
 //.. router ................................................
 
@@ -205,6 +229,17 @@ Helper = {
             hs.push({name: h.name, value: h.value})
         });
         return hs;
+    },
+    prepareHeaders: function(headers) {
+        var hs = []
+        Helper.cloneHeaders(headers).forEach(function (h) {
+            if (h.name == "Authorization" && h.value.indexOf("Basic ") == 0
+                    && h.value.indexOf(":") > 0) {
+                h.value = "Basic " + btoa(h.value.substr(6));
+            }
+            hs.push(h);
+        }); 
+        return hs; 
     }
 
 };

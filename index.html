@@ -2,15 +2,17 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="initial-scale=1.0" />
     <title>restclient</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" href="favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/foundation.css" />
     <link rel="stylesheet" href="css/fonts/foundation-icons.css" />
+    <link rel="stylesheet" href="css/fonts/meslo.css" />
     <link rel="stylesheet" href="css/pace.css">
     <link rel="stylesheet" href="css/style.css">
+
 </head>
 <body>
 
@@ -29,10 +31,14 @@
                 {{input value=url action="call"}}
             </div>
             <div class="small-1 columns">
-                <a class="button postfix" {{action call}}>send</a>
+                <a class="button postfix" {{action call}}>
+                    <i class="fi-play"></i>
+                </a>
             </div>
             <div class="small-1 columns">
-                <a class="button secondary postfix" {{action clean}}>new</a>
+                <a class="button secondary postfix" {{action clean}}>
+                    <i class="fi-trash"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -43,7 +49,14 @@
             {{#each item in History}}
                 <tr {{action select item}}>
                     <td class="small-1"><span class="label">{{item.method}}</span></td>
-                    <td class="small-10"><div class="over">{{item.url}}</div></td>
+                    <td class="small-10">
+                        <div class="over">
+                            {{#if item.serverPath.server}}
+                                <span class=server>{{item.serverPath.server}}</span><br/>
+                            {{/if}}
+                            {{item.serverPath.path}}
+                        </div>
+                    </td>
                     <td class="small-1 text-right">
                         <a {{action remove item}}><i class="fi-x"></i></a>
                     </td>
@@ -65,16 +78,20 @@
 
 <script type="text/x-handlebars" id="response">
     <div class="clearfix">
-        <h4 class="left">response {{selected.response.code}}</h4>
+        <h4 class="left">response </h4>
+
         <a class="button tiny right" {{action remove selected}}>
             <i class="fi-x" ></i>
         </a>
         <a class="button secondary tiny right" {{action toggle target="view"}}>
-            <i class="fi-list-thumbnails" ></i>
+            <i class="fi-list" ></i>
         </a>
     </div>
+    {{#if selected.response.code}}
+        <span {{bind-attr class="success"}}>{{selected.response.code}}</span>
+    {{/if}}
+    <table class="small-12">
     {{#if view.headers}}
-        <table class="small-12">
         {{#if selected.response.headers}}
             {{#each item in selected.response.headers}}
                 <tr><td>{{item.name}}</td><td>{{item.value}}</td></tr>
@@ -82,8 +99,8 @@
         {{else}}
             <tr><td><i>no headers</i></td><td></td></tr>
         {{/if}}
-        </table>
     {{/if}}
+    </table>
     <pre>{{selected.response.body}}</pre>
 </script>
 
@@ -91,10 +108,10 @@
     <table class="small-12">
     {{#each h in headers}}
         <tr>
-            <td>
+            <td class="large-5 small-4">
                 <div class="input-inline">{{view Ember.TextField value=h.name list="headers" }}</div>
             </td>
-            <td>
+            <td class="large-7 small-8">
                 <div class="input-inline">{{view Ember.TextField value=h.value class="input-inline"}}</div>
             </td>
             <td>
