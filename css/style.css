@@ -90,3 +90,8 @@ pre {
     font-size: 0.7rem;
     color: #666;    
 }
+
+.reveal-modal {
+    visibility: visible;
+    display: block;
+}

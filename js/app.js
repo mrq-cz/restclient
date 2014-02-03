@@ -38,12 +38,22 @@ CommonHeaders = Ember.ArrayController.create({
     content:['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
 });
 History = Ember.ArrayController.create({
+    serialize : function () {
+        return JSON.stringify(History.toArray());
+    },
+    restore : function (serialized) {
+        var data = JSON.parse(serialized);
+        History.clear()
+        data.forEach(function(h) {History.addObject(Call.create(h))});    
+    },
     saveStorage : function() {
-        localStorage.setItem("restclient-history", JSON.stringify(History.toArray()))
+        localStorage.setItem("restclient-history", History.serialize())
     },
     restoreStorage : function() {
-        var restore = JSON.parse(localStorage.getItem("restclient-history"));
-        restore.forEach(function(h) {History.addObject(Call.create(h))});
+        var data = localStorage.getItem("restclient-history");
+        if (data != null) {
+            History.restore(data);
+        }
     }
 });
 
@@ -54,6 +64,7 @@ App.IndexController = Ember.Controller.extend({
     headers: Ember.ArrayController.create({content:[]}),
 
     selected: null,
+    data: null,
 
     success: function() {
             return this.get('selected.response.code') < 300 ? "label success" : "label alert";    
@@ -136,13 +147,13 @@ App.IndexController = Ember.Controller.extend({
 
         removeHeader: function(header) {
             this.headers.removeObject(header);
-        }
-    }
-});
+        },
 
-App.HeadersController = Ember.Controller.extend({
-    templateName: 'headers',
-    actions: {
+        restoreHistory: function() {
+            History.restore(this.data);
+            History.saveStorage();
+            this.send('closeModal');
+        }
     }
 });
 
@@ -165,6 +176,21 @@ ResponseView = Ember.View.extend({
         empty : function() {
             return this.get('controller.headers').toArray().size < 1;
         }   
+    }
+});
+
+SettingsView = Ember.View.extend({
+    templateName: 'settings',
+
+    didInsertElement: function() {
+        this.set('controller.data',History.serialize());
+    },
+
+    actions: {
+        close: function() {
+            alert('hej');
+            return this.send('closeModal');
+        }
     }
 });
 
@@ -216,7 +242,21 @@ App.Router.map(function() {
 App.IndexRoute = Ember.Route.extend({
     setupController: function(controller, model) {
         History.restoreStorage();
-    }
+    },
+    actions: {
+        openModal: function(modalName) {
+            return this.render(modalName, {
+                into: 'application',
+                outlet: 'modal'
+            });
+        },    
+        closeModal: function() {
+            return this.disconnectOutlet({
+                outlet: 'modal',
+                parentView: 'application'
+            });
+        }
+    }   
 });
 
 
