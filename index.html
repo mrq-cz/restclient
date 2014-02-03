@@ -68,7 +68,7 @@
             <h4>request</h4>
             {{view TextAreaView value=body}}
             {{view HeadersView}}
-            <a {{action openModal 'settingsModal'}}>
+            <a style="margin-bottom: 1.5em;" {{action openModal 'settingsModal'}}>
                 <i class="fi-wrench"></i> settings
             </a>
         </div>
@@ -124,9 +124,7 @@
         </tr>
     {{/each}}
     </table>
-    <div style="margin-bottom: 1.5em;">
-        <a {{action addHeader}}><i class="fi-plus"></i> header</a>
-    </div>
+    <a {{action addHeader}}><i class="fi-plus"></i> header</a>
     <datalist id=headers >
         {{#each ch in CommonHeaders}}
             <option>{{ch}}
@@ -143,6 +141,7 @@
         <a class="close-reveal-modal" {{action closeModal}}>&#215;</a>
         <h3>Settings</h3>
         <p>Here you can restore or backup your request history.</p>
+        <a {{action toggleHistory target=view}}>{{view Ember.Checkbox checkedBinding="view.withoutResponse"}} ignore responses</a>
         {{view TextAreaView value=data}}       
         <a class="button small" {{action restoreHistory}}>OK</a>
         <a class="button small secondary" {{action closeModal}}>Cancel</a>

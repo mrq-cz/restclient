@@ -38,8 +38,14 @@ CommonHeaders = Ember.ArrayController.create({
     content:['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
 });
 History = Ember.ArrayController.create({
-    serialize : function () {
-        return JSON.stringify(History.toArray());
+    serialize : function (withoutResponse) {
+        if(withoutResponse) {
+            var data = JSON.parse(History.serialize());
+            data.forEach(function(d) { d.response = null });
+            return JSON.stringify(data);
+        } else {
+            return JSON.stringify(History.toArray());
+        }
     },
     restore : function (serialized) {
         var data = JSON.parse(serialized);
@@ -182,14 +188,16 @@ ResponseView = Ember.View.extend({
 SettingsView = Ember.View.extend({
     templateName: 'settings',
 
+    withoutResponse: false,
+
     didInsertElement: function() {
         this.set('controller.data',History.serialize());
     },
 
     actions: {
-        close: function() {
-            alert('hej');
-            return this.send('closeModal');
+        toggleHistory: function() {
+            this.set('withoutResponse',!this.withoutResponse);
+            this.set('controller.data',History.serialize(this.withoutResponse));
         }
     }
 });
