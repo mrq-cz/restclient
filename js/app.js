@@ -26,7 +26,39 @@ Call = Ember.Object.extend({
         } else {
             return { server: null, path: url };
         }
-    }.property('url')
+    }.property('url'),
+
+    send: function(callback) {
+        var self = this;
+        $.ajax({
+            url: self.url,
+            type: self.method,
+            data: self.request.body,
+            beforeSend: function(xhr) {
+                self.request.headers.toArray().forEach(function(h) {
+                    xhr.setRequestHeader(h.name, h.value);
+                });
+            },
+            success: function(data, status) {
+                var body;
+                if (typeof data == "object") {
+                    body = JSON.stringify(data, undefined, 2);
+                } else {
+                    body = data;
+                }
+                self.set('response.body',body);
+            },
+            error: function(xhr) {
+                self.set('response.body',xhr.responseText);
+            },
+            complete: function(xhr, status) {
+                self.set('response.code',xhr.status);
+                self.set('response.xhr',xhr);
+                self.set('response.headers',Helper.parseHeaders(xhr.getAllResponseHeaders()));
+                callback(self);
+            }
+        });
+    }
 });
 
 //.. controller ............................................
@@ -71,6 +103,7 @@ App.IndexController = Ember.Controller.extend({
 
     selected: null,
     data: null,
+    blueprint: null,
 
     success: function() {
             return this.get('selected.response.code') < 300 ? "label success" : "label alert";    
@@ -96,8 +129,7 @@ App.IndexController = Ember.Controller.extend({
             var headers = this.headers.toArray();
             Helper.prepareHeaders(headers);
             headers.removeArrayObserver();
-            var call = Call.create(
-                {
+            var call = Call.create({
                     url: this.url,
                     method: this.method,
                     request: Message.create({
@@ -105,39 +137,11 @@ App.IndexController = Ember.Controller.extend({
                         headers: headers
                     }),
                     response: Response.create()
-                }
-            );
-            call.get('request').set('body', this.body);
+            });
             History.addObject(call);
             this.send('select',call);
-            $.ajax({
-                url: this.url,
-                type: this.method,
-                data: this.body,
-                beforeSend: function(xhr) { 
-                    headers.toArray().forEach(function(h) {
-                        xhr.setRequestHeader(h.name, h.value);    
-                    });
-                },
-                success: function(data, status) {
-                    var body;
-                    if (typeof data == "object") {
-                        body = JSON.stringify(data, undefined, 2);
-                    } else {
-                        body = data;
-                    }
-                    call.set('response.body',body);
-                },
-                error: function(xhr) {
-                    call.set('response.body',xhr.responseText);
-                },
-                complete: function(xhr, status) {
-                    call.set('response.code',xhr.status);
-                    call.set('response.xhr',xhr);
-                    call.set('response.headers',Helper.parseHeaders(xhr.getAllResponseHeaders()));
-                    History.saveStorage();
-                }
-
+            call.send(function() {
+                History.saveStorage();
             });
         },
 
@@ -157,6 +161,9 @@ App.IndexController = Ember.Controller.extend({
 
         restoreHistory: function() {
             History.restore(this.data);
+            if (this.blueprint && this.blueprint.trim().length > 0) {
+                Apiary.parseBlueprint(this.blueprint);
+            }
             History.saveStorage();
             this.send('closeModal');
         }
@@ -191,6 +198,7 @@ SettingsView = Ember.View.extend({
     withoutResponse: false,
 
     didInsertElement: function() {
+        this.set('controller.blueprint',null);
         this.set('controller.data',History.serialize());
     },
 
@@ -282,9 +290,11 @@ Helper = {
     },
     cloneHeaders: function(headers) {
         var hs = [];
-        headers.forEach(function (h) {
-            hs.push({name: h.name, value: h.value})
-        });
+        if (headers) {
+            headers.forEach(function (h) {
+                hs.push({name: h.name, value: h.value})
+            });
+        }
         return hs;
     },
     prepareHeaders: function(headers) {
@@ -298,7 +308,65 @@ Helper = {
         }); 
         return hs; 
     }
+};
 
+Apiary = {
+    lastAst: null,
+
+    parseBlueprint: function(blueprint) {
+        var astCall = Call.create(
+            {
+                url: 'http://api.apiblueprint.org/blueprint/ast',
+                method: 'POST',
+                request: Message.create({
+                    body: JSON.stringify({ blueprintCode: blueprint })
+                }),
+                response: Response.create()
+            }
+        );
+        astCall.send(function(call) {
+            var response = JSON.parse(call.response.body);
+            Apiary.lastAst = response.ast;
+            Apiary.parseAst(response.ast);
+        });
+    },
+    parseAst: function(ast) {
+        if (!ast.resourceGroups) return [];
+        if (ast.metadata && ast.metadata.HOST) {
+            var server = ast.metadata.HOST.value;
+        }
+        if (!server) server = '';
+        var calls = []
+        ast.resourceGroups.forEach(function (g) {
+            g.resources.forEach(function(r){
+                r.actions.forEach(function (a) {
+                    var req, res, code, e;
+                    if (e = a.examples[0]) {
+                        if (e.requests[0]) {
+                            req = e.requests[0].body;
+                        }
+                        if (e.responses[0]) {
+                            code = parseInt(e.responses[0].name);
+                            res = e.responses[0].body;
+                        }
+                    }
+                    var call = Call.create({
+                            url: server + r.uriTemplate,
+                            method: a.method,
+                            request: Message.create({
+                                body: req
+                            }),
+                            response: Response.create({
+                                code: code,
+                                body: res
+                            })
+                    });
+                    History.addObject(call);
+                });
+            });
+        });
+        History.saveStorage();
+    }
 };
 
 Ember.TextField.reopen({

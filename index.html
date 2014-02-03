@@ -46,31 +46,35 @@
 
     <div class="row collapse">
         <div class="large-4 medium-12 columns foreground">
-            <table class="clickable small-12">
-            {{#each item in History}}
-                <tr {{action select item}}>
-                    <td class="small-1"><span class="label">{{item.method}}</span></td>
-                    <td class="small-10">
-                        <div class="over">
-                            {{#if item.serverPath.server}}
-                                <span class=server>{{item.serverPath.server}}</span><br/>
-                            {{/if}}
-                            {{item.serverPath.path}}
-                        </div>
-                    </td>
-                    <td class="small-1 text-right" {{action remove item}}>
-                        <a><i class="fi-x"></i></a>
-                    </td>
-                </tr>
-            {{/each}}
-            </table>
+            {{#if History.length}}
+            <div class="history">
+                <table class="clickable small-12">
+                {{#each item in History}}
+                    <tr {{action select item}}>
+                        <td class="small-1"><span class="label">{{item.method}}</span></td>
+                        <td class="small-10">
+                            <div class="over">
+                                {{#if item.serverPath.server}}
+                                    <span class=server>{{item.serverPath.server}}</span><br/>
+                                {{/if}}
+                                {{item.serverPath.path}}
+                            </div>
+                        </td>
+                        <td class="small-1 text-right" {{action remove item}}>
+                            <a><i class="fi-x"></i></a>
+                        </td>
+                    </tr>
+                {{/each}}
+                </table>
+            </div>
+            {{/if}}
 
             <h4>request</h4>
             {{view TextAreaView value=body}}
             {{view HeadersView}}
-            <a style="margin-bottom: 1.5em;" {{action openModal 'settingsModal'}}>
+            <div style="margin-bottom: 1.5em;"><a {{action openModal 'settingsModal'}}>
                 <i class="fi-wrench"></i> settings
-            </a>
+            </a></div>
         </div>
         <div class="large-8 medium-12 columns response">
             {{#if selected}}
@@ -109,6 +113,7 @@
 </script>
 
 <script type="text/x-handlebars" id="headers">
+    {{#if headers.length}}
     <table class="small-12">
     {{#each h in headers}}
         <tr>
@@ -124,6 +129,7 @@
         </tr>
     {{/each}}
     </table>
+    {{/if}}
     <a {{action addHeader}}><i class="fi-plus"></i> header</a>
     <datalist id=headers >
         {{#each ch in CommonHeaders}}
@@ -142,7 +148,17 @@
         <h3>Settings</h3>
         <p>Here you can restore or backup your request history.</p>
         <a {{action toggleHistory target=view}}>{{view Ember.Checkbox checkedBinding="view.withoutResponse"}} ignore responses</a>
-        {{view TextAreaView value=data}}       
+
+        <h4>History</h4>
+        {{view TextAreaView value=data}}
+
+        <h4>Apiary Blueprint</h4>
+        {{view TextAreaView value=blueprint}}
+        <p>
+            You can also import Apiary blueprint to the request history. Note that blueprint will be sent to the
+            <a hre="http://apiblueprint.org/">apiblueprint.org</a> for parsing. Same-origin policy has to be disabled for
+            this to work.
+        </p>
         <a class="button small" {{action restoreHistory}}>OK</a>
         <a class="button small secondary" {{action closeModal}}>Cancel</a>
     </div>

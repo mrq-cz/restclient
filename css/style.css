@@ -78,7 +78,13 @@ pre {
     font-family: Consolas,Menlo,'Meslo',courier, monospace, serif;
 }
 
-.clickable tr:hover, .clickable tr:nth-of-type(even):hover { 
+.clickable  {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.clickable tr:hover, .clickable tr:nth-of-type(even):hover {
     cursor: pointer;
     background-color: #EEE;
     -webkit-transition: background-color 300ms ease-out;
@@ -94,4 +100,12 @@ pre {
 .reveal-modal {
     visibility: visible;
     display: block;
+}
+
+.history {
+    margin-bottom: 1em;
+    max-height: 25em;
+    border: solid 1px #dddddd;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
 }
