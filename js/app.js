@@ -20,11 +20,9 @@ Call = Ember.Object.extend({
     response: {},
 
     serverPath: function() {
-        var i, url = this.get('url');
-        if ((i = url.indexOf('://')) > 0) {
-            url = url.substr(i+3);
-            i = url.indexOf('/');
-            return { server: url.substr(0,i), path: url.substr(i) };
+        var i, j, url = this.get('url');
+        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 && (j += i+3)+1 < url.length) {
+            return { server: url.substr(0,j), path: url.substr(j) };
         } else {
             return { server: null, path: url };
         }
@@ -39,7 +37,15 @@ Methods = Ember.ArrayController.create({
 CommonHeaders = Ember.ArrayController.create({
     content:['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
 });
-History = Ember.ArrayController.create();
+History = Ember.ArrayController.create({
+    saveStorage : function() {
+        localStorage.setItem("restclient-history", JSON.stringify(History.toArray()))
+    },
+    restoreStorage : function() {
+        var restore = JSON.parse(localStorage.getItem("restclient-history"));
+        restore.forEach(function(h) {History.addObject(Call.create(h))});
+    }
+});
 
 App.IndexController = Ember.Controller.extend({
     url: '',
@@ -65,6 +71,7 @@ App.IndexController = Ember.Controller.extend({
         remove: function(call) {
             if (this.selected == call) this.set('selected', null);
             History.removeObject(call);
+            History.saveStorage();
         },
 
         call: function() {
@@ -111,6 +118,7 @@ App.IndexController = Ember.Controller.extend({
                     call.set('response.code',xhr.status);
                     call.set('response.xhr',xhr);
                     call.set('response.headers',Helper.parseHeaders(xhr.getAllResponseHeaders()));
+                    History.saveStorage();
                 }
 
             });
@@ -207,6 +215,7 @@ App.Router.map(function() {
 
 App.IndexRoute = Ember.Route.extend({
     setupController: function(controller, model) {
+        History.restoreStorage();
     }
 });
 
