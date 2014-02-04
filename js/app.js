@@ -19,15 +19,6 @@ Call = Ember.Object.extend({
     request: {},
     response: {},
 
-    serverPath: function() {
-        var i, j, url = this.get('url');
-        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 && (j += i+3)+1 < url.length) {
-            return { server: url.substr(0,j), path: url.substr(j) };
-        } else {
-            return { server: null, path: url };
-        }
-    }.property('url'),
-
     send: function(callback) {
         var self = this;
         $.ajax({
@@ -58,7 +49,20 @@ Call = Ember.Object.extend({
                 callback(self);
             }
         });
-    }
+    },
+
+    serverPath: function() {
+        var i, j, url = this.get('url');
+        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 && (j += i+3)+1 < url.length) {
+            return { server: url.substr(0,j), path: url.substr(j) };
+        } else {
+            return { server: null, path: url };
+        }
+    }.property('url'),
+
+    methodColor: function() {
+        return this.method === 'GET' ? "label" : "label success";
+    }.property('method')
 });
 
 //.. controller ............................................

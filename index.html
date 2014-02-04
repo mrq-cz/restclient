@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="css/fonts/meslo.css" />
     <link rel="stylesheet" href="css/pace.css">
     <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body>
 
@@ -51,7 +50,9 @@
                 <table class="clickable small-12">
                 {{#each item in History}}
                     <tr {{action select item}}>
-                        <td class="small-1"><span class="label">{{item.method}}</span></td>
+                        <td class="small-1">
+                            <span {{bind-attr class="item.methodColor"}}>{{item.method}}</span>
+                        </td>
                         <td class="small-10">
                             <div class="over">
                                 {{#if item.serverPath.server}}
