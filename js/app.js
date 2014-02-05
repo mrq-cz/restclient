@@ -45,7 +45,7 @@ Call = Ember.Object.extend({
             complete: function(xhr, status) {
                 self.set('response.code',xhr.status);
                 self.set('response.xhr',xhr);
-                self.set('response.headers',Helper.parseHeaders(xhr.getAllResponseHeaders()));
+                self.set('response.headers',Headers.parse(xhr.getAllResponseHeaders()));
                 callback(self);
             }
         });
@@ -119,7 +119,7 @@ App.IndexController = Ember.Controller.extend({
             this.set('url',call.url);
             this.set('method',call.method);
             this.set('body',call.request.body);
-            this.set('headers.content',Helper.cloneHeaders(call.request.headers));
+            this.set('headers.content',Headers.clone(call.request.headers));
         },
 
         remove: function(call) {
@@ -129,7 +129,7 @@ App.IndexController = Ember.Controller.extend({
         },
 
         call: function(again) {
-            this.set('headers.content',Helper.prepareHeaders(this.headers));
+            this.set('headers.content',Headers.prepare(this.headers));
             var headers = this.headers.toArray();
             headers.removeArrayObserver();
             var call = Call.create({
@@ -291,8 +291,11 @@ App.IndexRoute = Ember.Route.extend({
 
 //.. helpers ................................................
 
-Helper = {
-    parseHeaders: function(string) {
+Headers = {
+
+    plugins: {},
+
+    parse: function(string) {
         var headers = [], ha = string.split('\n');
         ha.forEach(function (h) {
             if (!h || h.trim() == '') return;
@@ -301,7 +304,7 @@ Helper = {
         });
         return headers;
     },
-    cloneHeaders: function(headers) {
+    clone: function(headers) {
         var hs = [];
         if (headers) {
             headers.forEach(function (h) {
@@ -310,18 +313,23 @@ Helper = {
         }
         return hs;
     },
-    prepareHeaders: function(headers) {
-        var hs = []
-        Helper.cloneHeaders(headers).forEach(function (h) {
-            if (h.name == 'Authorization' && h.value.indexOf('Basic ') == 0
-                    && h.value.indexOf(':') > 0) {
-                h.value = 'Basic ' + btoa(h.value.substr(6));
+    prepare: function(headers) {
+        var plugin, hs = []
+        Headers.clone(headers).forEach(function (h) {
+            if (typeof(plugin = Headers.plugins[h.name]) == "function") {
+                plugin(h, headers);
             }
             hs.push(h);
         }); 
         return hs; 
     }
 };
+
+Headers.plugins.Authorization = function(header, headers) {
+    if (header.value.indexOf('Basic ') == 0 && header.value.indexOf(':') > 0) {
+        header.value = 'Basic ' + btoa(header.value.substr(6));
+    }
+}
 
 Apiary = {
     lastAst: null,
