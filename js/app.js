@@ -16,8 +16,8 @@ Response = Message.extend({
 Call = Ember.Object.extend({
     method: 'GET',
     url: '',
-    request: {},
-    response: {},
+    request: Message.create(),
+    response: Response.create(),
 
     send: function(callback) {
         var self = this;
@@ -26,9 +26,11 @@ Call = Ember.Object.extend({
             type: self.method,
             data: self.request.body,
             beforeSend: function(xhr) {
-                self.request.headers.toArray().forEach(function(h) {
-                    xhr.setRequestHeader(h.name, h.value);
-                });
+                if (self.request.headers) {
+                    self.request.headers.toArray().forEach(function(h) {
+                        xhr.setRequestHeader(h.name, h.value);
+                    });
+                }
             },
             success: function(data, status) {
                 var body;
@@ -45,7 +47,7 @@ Call = Ember.Object.extend({
             complete: function(xhr, status) {
                 self.set('response.code',xhr.status);
                 self.set('response.xhr',xhr);
-                self.set('response.headers',Headers.parse(xhr.getAllResponseHeaders()));
+                self.set('response.headers',Headers.parseString(xhr.getAllResponseHeaders()));
                 callback(self);
             }
         });
@@ -154,13 +156,13 @@ App.IndexController = Ember.Controller.extend({
         },
 
         clean: function() {
-            this.setProperties({url: '', method: 'GET', body: '', })
-            this.set('headers.content',[])
+            this.setProperties({url: '', method: 'GET', body: '' });
+            this.set('headers.content',[]);
             this.set('selected', null);
         },
 
         addHeader : function () {
-            this.headers.addObject({name: '', value: ''})
+            this.headers.addObject({name: '', value: ''});
         },
 
         removeHeader: function(header) {
@@ -169,15 +171,20 @@ App.IndexController = Ember.Controller.extend({
 
         saveSettings: function() {
             History.restore(this.data);
+            History.saveStorage();
             if (this.blueprint && this.blueprint.trim().length > 0) {
-                var ast = JSON.parse(this.blueprint);
-                if (ast) {
-                    Apiary.parseAst(ast);
-                } else {
+                var ast, err;
+                try {
+                    ast = JSON.parse(this.blueprint);
+                } catch (e) {
+                    err = e;
+                }
+                if (err) {
                     Apiary.parseBlueprint(this.blueprint);
+                } else {
+                    Apiary.parseAst(ast);
                 }
             }
-            History.saveStorage();
             this.send('closeModal');
         }
     }
@@ -271,6 +278,10 @@ App.Router.map(function() {
 App.IndexRoute = Ember.Route.extend({
     setupController: function(controller, model) {
         History.restoreStorage();
+        if (History.get('length') == 0) {
+            var astUrl = Helpers.queryParam('ast');
+            if (astUrl) Apiary.parseAstFromUrl(astUrl);
+        }
     },
     actions: {
         openModal: function(modalName) {
@@ -291,11 +302,33 @@ App.IndexRoute = Ember.Route.extend({
 
 //.. helpers ................................................
 
+Helpers = {
+    parseUrl: function(url) {
+        var a = document.createElement('a');
+        a.href = url;
+        return a;
+    },
+    queryParam: function(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx control chars
+        var match = location.search.match(new RegExp("[?&]" + key + "=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+}
+
 Headers = {
 
     plugins: {},
 
-    parse: function(string) {
+    parse : function(object) {
+        var headers = [];
+        if (object) {
+            $.each(object, function(index, value) {
+                headers.push({ name: index, value: value.value });
+            });
+        }
+        return headers;
+    },
+    parseString: function(string) {
         var headers = [], ha = string.split('\n');
         ha.forEach(function (h) {
             if (!h || h.trim() == '') return;
@@ -357,36 +390,47 @@ Apiary = {
             var server = ast.metadata.HOST.value;
         }
         if (!server) server = '';
-        var calls = []
+        var calls = [];
         ast.resourceGroups.forEach(function (g) {
             g.resources.forEach(function(r){
                 r.actions.forEach(function (a) {
-                    var req, res, code, e;
+                    var req = {}, res = {}, code, e;
                     if (e = a.examples[0]) {
                         if (e.requests[0]) {
-                            req = e.requests[0].body;
+                            req = Message.create({
+                                body: e.requests[0].body,
+                                headers: Headers.parse(e.requests[0].headers)
+                            });
                         }
                         if (e.responses[0]) {
-                            code = parseInt(e.responses[0].name);
-                            res = e.responses[0].body;
+                            res = Response.create({
+                                code: parseInt(e.responses[0].name),
+                                body: e.responses[0].body,
+                                headers: Headers.parse(e.responses[0].headers)
+                            });
                         }
                     }
                     var call = Call.create({
                             url: server + r.uriTemplate,
                             method: a.method,
-                            request: Message.create({
-                                body: req
-                            }),
-                            response: Response.create({
-                                code: code,
-                                body: res
-                            })
+                            request: req,
+                            response: res
                     });
                     History.addObject(call);
                 });
             });
         });
         History.saveStorage();
+    },
+    parseAstFromUrl: function(url) {
+        var astCall = Call.create({ url: url });
+        astCall.send(function(call) {
+            var ast = JSON.parse(call.response.body);
+            Apiary.lastAst = ast;
+            if (ast) {
+                Apiary.parseAst(ast);
+            }
+        });
     }
 };
 

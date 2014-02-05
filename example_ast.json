@@ -1,0 +1,59 @@
+{
+    "_version": "1.0",
+    "metadata": {},
+    "name": "",
+    "description": "",
+    "resourceGroups": [
+        {
+            "name": "",
+            "description": "",
+            "resources": [
+                {
+                    "name": "",
+                    "description": "",
+                    "uriTemplate": "/message",
+                    "model": {},
+                    "parameters": {},
+                    "headers": {},
+                    "actions": [
+                        {
+                            "name": "",
+                            "description": "",
+                            "method": "GET",
+                            "parameters": {},
+                            "headers": {},
+                            "examples": [
+                                {
+                                    "name": "",
+                                    "description": "",
+                                    "requests": [
+                                        {
+                                            "headers": {
+                                                "Content-Type": {
+                                                    "value": "text/plain"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "responses": [
+                                        {
+                                            "name": "200",
+                                            "description": "",
+                                            "headers": {
+                                                "Content-Type": {
+                                                    "value": "text/plain"
+                                                }
+                                            },
+                                            "body": "Hello World!\n",
+                                            "schema": ""
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
