@@ -32,7 +32,7 @@ Call = Ember.Object.extend({
             },
             success: function(data, status) {
                 var body;
-                if (typeof data == "object") {
+                if (typeof data == 'object') {
                     body = JSON.stringify(data, undefined, 2);
                 } else {
                     body = data;
@@ -61,7 +61,7 @@ Call = Ember.Object.extend({
     }.property('url'),
 
     methodColor: function() {
-        return this.method === 'GET' ? "label" : "label success";
+        return this.method === 'GET' ? 'label' : 'label success';
     }.property('method')
 });
 
@@ -89,10 +89,10 @@ History = Ember.ArrayController.create({
         data.forEach(function(h) {History.addObject(Call.create(h))});    
     },
     saveStorage : function() {
-        localStorage.setItem("restclient-history", History.serialize())
+        localStorage.setItem('restclient-history', History.serialize())
     },
     restoreStorage : function() {
-        var data = localStorage.getItem("restclient-history");
+        var data = localStorage.getItem('restclient-history');
         if (data != null) {
             History.restore(data);
         }
@@ -110,7 +110,7 @@ App.IndexController = Ember.Controller.extend({
     blueprint: null,
 
     success: function() {
-            return this.get('selected.response.code') < 300 ? "label success" : "label alert";    
+            return this.get('selected.response.code') < 300 ? 'label success' : 'label alert';    
     }.property('selected.response.code'),
 
     actions : {
@@ -128,21 +128,25 @@ App.IndexController = Ember.Controller.extend({
             History.saveStorage();
         },
 
-        call: function() {
+        call: function(again) {
             this.set('headers.content',Helper.prepareHeaders(this.headers));
             var headers = this.headers.toArray();
-            Helper.prepareHeaders(headers);
             headers.removeArrayObserver();
             var call = Call.create({
-                    url: this.url,
-                    method: this.method,
-                    request: Message.create({
-                        body: this.body,
-                        headers: headers
-                    }),
-                    response: Response.create()
+                url: this.url,
+                method: this.method,
+                request: Message.create({
+                    body: this.body,
+                    headers: headers
+                }),
+                response: Response.create()
             });
-            History.addObject(call);
+            if (again) {
+                var i = History.indexOf(this.selected);
+                History.replace(i,1,[call]);
+            } else {
+                History.addObject(call);
+            }
             this.send('select',call);
             call.send(function() {
                 History.saveStorage();
@@ -163,10 +167,15 @@ App.IndexController = Ember.Controller.extend({
             this.headers.removeObject(header);
         },
 
-        restoreHistory: function() {
+        saveSettings: function() {
             History.restore(this.data);
             if (this.blueprint && this.blueprint.trim().length > 0) {
-                Apiary.parseBlueprint(this.blueprint);
+                var ast = JSON.parse(this.blueprint);
+                if (ast) {
+                    Apiary.parseAst(ast);
+                } else {
+                    Apiary.parseBlueprint(this.blueprint);
+                }
             }
             History.saveStorage();
             this.send('closeModal');
@@ -226,13 +235,13 @@ TextAreaView = Ember.TextArea.extend({
                 {
                     var sS = o.selectionStart;
                     var sE = o.selectionEnd;
-                    o.value = o.value.substring(0, sS) + "\t" + o.value.substr(sE);
+                    o.value = o.value.substring(0, sS) + '\t' + o.value.substr(sE);
                     o.setSelectionRange(sS + 1, sS + 1);
                     o.focus();
                 }
                 else if (o.createTextRange)
                 {
-                    document.selection.createRange().text = "\t";
+                    document.selection.createRange().text = '\t';
                     e.returnValue = false;
                 }
                 o.scrollTop = oS;
@@ -284,9 +293,9 @@ App.IndexRoute = Ember.Route.extend({
 
 Helper = {
     parseHeaders: function(string) {
-        var headers = [], ha = string.split("\n");
+        var headers = [], ha = string.split('\n');
         ha.forEach(function (h) {
-            if (!h || h.trim() == "") return;
+            if (!h || h.trim() == '') return;
             var hp = { name: h.split(':',1)[0], value: h.substr(h.indexOf(':')+1).trim() };
             headers.push(hp);
         });
@@ -304,9 +313,9 @@ Helper = {
     prepareHeaders: function(headers) {
         var hs = []
         Helper.cloneHeaders(headers).forEach(function (h) {
-            if (h.name == "Authorization" && h.value.indexOf("Basic ") == 0
-                    && h.value.indexOf(":") > 0) {
-                h.value = "Basic " + btoa(h.value.substr(6));
+            if (h.name == 'Authorization' && h.value.indexOf('Basic ') == 0
+                    && h.value.indexOf(':') > 0) {
+                h.value = 'Basic ' + btoa(h.value.substr(6));
             }
             hs.push(h);
         }); 

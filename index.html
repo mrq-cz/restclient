@@ -25,19 +25,24 @@
         <div class="row collapse">
             <div class="small-2 columns">
                 {{view Ember.Select contentBinding="Methods" selectionBinding="method"
-                optionLabelPath="content" optionValuePath="content" }}
+                    optionLabelPath="content" optionValuePath="content" }}
             </div>
-            <div class="small-8 columns">
+            <div class="small-7 columns">
                 {{input value=url action="call"}}
             </div>
             <div class="small-1 columns">
-                <a class="button postfix" {{action call}}>
+                <a class="button icon postfix" {{action call}}>
                     <i class="fi-play"></i>
                 </a>
             </div>
             <div class="small-1 columns">
-                <a class="button secondary postfix" {{action clean}}>
-                    <i class="fi-trash"></i>
+                <a class="button icon secondary postfix" {{action call true}}>
+                    <i class="fi-refresh"></i>
+                </a>
+            </div>
+            <div class="small-1 columns">
+                <a class="button icon secondary postfix" {{action clean}}>
+                    <i class="fi-asterisk"></i>
                 </a>
             </div>
         </div>
@@ -89,12 +94,14 @@
     <div class="clearfix">
         <h4 class="left">response </h4>
 
-        <a class="button tiny right" {{action remove selected}}>
-            <i class="fi-x" ></i>
+
+        <a class="button icon tiny right" {{action remove selected}}>
+            <i class="fi-x"></i>
         </a>
-        <a class="button secondary tiny right" {{action toggle target="view"}}>
-            <i class="fi-list" ></i>
+        <a class="button icon secondary tiny right" {{action toggle target="view"}}>
+            <i class="fi-list"></i>
         </a>
+
     </div>
     {{#if selected.response.code}}
         <span {{bind-attr class="success"}}>{{selected.response.code}}</span>
@@ -146,9 +153,12 @@
 <script type="text/x-handlebars" id="settings">
     <div id="settingsModal" class="reveal-modal">
         <a class="close-reveal-modal" {{action closeModal}}>&#215;</a>
+        
         <h3>Settings</h3>
         <p>Here you can restore or backup your request history.</p>
-        <a {{action toggleHistory target=view}}>{{view Ember.Checkbox checkedBinding="view.withoutResponse"}} ignore responses</a>
+        <a {{action toggleHistory target=view}}>
+            {{view Ember.Checkbox checkedBinding="view.withoutResponse"}} ignore responses
+        </a>
 
         <h4>History</h4>
         {{view TextAreaView value=data}}
@@ -156,11 +166,12 @@
         <h4>Apiary Blueprint</h4>
         {{view TextAreaView value=blueprint}}
         <p>
-            You can also import Apiary blueprint to the request history. Note that blueprint will be sent to the
-            <a hre="http://apiblueprint.org/">apiblueprint.org</a> for parsing. Same-origin policy has to be disabled for
-            this to work.
+            You can also import Apiary blueprint to the request history. 
+            Note that blueprint will be sent to the Apiary server for parsing. 
+            Same-origin policy has to be disabled for this to work, or you can import already parsed 
+            blueprint in <a target="_blank" href="http://apiblueprint.org/#examples">AST json format<</a>.
         </p>
-        <a class="button small" {{action restoreHistory}}>OK</a>
+        <a class="button small" {{action saveSettings}}>OK</a>
         <a class="button small secondary" {{action closeModal}}>Cancel</a>
     </div>
     <div class="reveal-modal-bg" style="display: block;"></div>
