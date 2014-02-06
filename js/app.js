@@ -438,4 +438,4 @@ Ember.TextField.reopen({
     attributeBindings: ['list']
 });
 
-Array.prototype.clone = function() { return jQuery.extend(true, {}, this); }
+Array.prototype.clone = function() { return jQuery.extend(true, {}, this); };

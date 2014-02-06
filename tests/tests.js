@@ -19,13 +19,21 @@ module("Integration tests", {
 });
 
 // QUnit test case
-test("/", function() {
-  // async helper telling the application to go to the '/' route
+test("render", function() {
   visit("/");
-
-  // helper waiting the application is idle before running the callback
   andThen(function() {
-    equal(find("h2").text(), "Welcome to Ember.js", "Application header is rendered");
-    equal(find("li").length, 3, "There are three items in the list");
+    equal(find("h4").text(), "request", "Application is rendered");
+
   });
 });
+
+/*
+test("submit", function(){
+    visit("/");
+    click("button");
+    andThen(function() {
+        ok(find("h1:contains('A new post')").length, "The post's title should display");
+        ok(find("a[rel=author]:contains('John Doe')").length, "A link to the author should display");
+    });
+});
+*/
