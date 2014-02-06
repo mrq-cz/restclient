@@ -32,7 +32,7 @@ textarea {
     height: auto;
     font-size: 0.8em;
     min-height: 110px;
-    font-family: Consolas,Menlo,'Meslo',courier, monospace;
+    font-family: Consolas,Menlo,courier, monospace;
 }
 
 .condense {
@@ -75,7 +75,7 @@ h4 {
 
 pre {
     font-size: 0.8em;
-    font-family: Consolas,Menlo,'Meslo',courier, monospace, serif;
+    font-family: Consolas,Menlo,courier, monospace, serif;
 }
 
 .clickable  {
@@ -133,14 +133,4 @@ button.icon.tiny, .button.icon.tiny {
     padding-left: 1.15rem;
     font-size: 1rem;
     margin-left: 0.04em;
-}
-
-/* Override and remove the bootstrap style, as ember breaks it */
-.table-striped>tbody>tr:nth-child(odd)>td, .table-striped>tbody>tr:nth-child(odd)>th {
-    background-color: inherit;
-}
-
-/* Instead, use nth-of-type selector to effectively ignore the script tags */
-.table-striped>tbody>tr:nth-of-type(odd)>td, .table-striped>tbody>tr:nth-of-type(odd)>th {
-    background-color: #F9F9F9;
 }
