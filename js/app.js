@@ -31,7 +31,7 @@ Call = Ember.Object.extend({
 
     methodColor: function() {
         return this.method === 'GET' ? 'label' : 'label success';
-    }.property('method')
+    }.property('method'),
 
     send: function(callback) {
         var self = this;
@@ -216,6 +216,7 @@ SettingsView = Ember.View.extend({
     templateName: 'settings',
 
     withoutResponse: false,
+    cleanHistory: false,
 
     didInsertElement: function() {
         this.set('controller.blueprint',null);
@@ -223,9 +224,17 @@ SettingsView = Ember.View.extend({
     },
 
     actions: {
-        toggleHistory: function() {
-            this.set('withoutResponse',!this.withoutResponse);
-            this.set('controller.data',History.serialize(this.withoutResponse));
+        toggleResponse: function() {
+            this.set('withoutResponse', !this.withoutResponse);
+            this.set('controller.data', 
+                this.cleanHistory ? "[]" : History.serialize(this.withoutResponse)
+                );
+        },
+        toggleCleanHistory: function() {
+            this.set('cleanHistory', !this.cleanHistory);
+            this.set('controller.data', 
+                this.cleanHistory ? "[]" : History.serialize(this.withoutResponse)
+                );
         }
     }
 });
@@ -287,6 +296,7 @@ App.IndexRoute = Ember.Route.extend({
             if (astUrl) Apiary.parseAstFromUrl(astUrl);
         }
     },
+
     actions: {
         openModal: function(modalName) {
             return this.render(modalName, {
@@ -369,16 +379,13 @@ Headers.plugins.Authorization = function(header, headers) {
 
 Apiary = {
     parseBlueprint: function(blueprint) {
-        var astCall = Call.create(
-            {
+        var astCall = Call.create({
                 url: 'http://api.apiblueprint.org/blueprint/ast',
                 method: 'POST',
                 request: Message.create({
                     body: JSON.stringify({ blueprintCode: blueprint })
-                }),
-                response: Response.create()
-            }
-        );
+                })
+        });
         astCall.send(function(call) {
             var response = JSON.parse(call.response.body);
             Apiary.parseAst(response.ast);

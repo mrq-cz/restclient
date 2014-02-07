@@ -154,8 +154,12 @@
         
         <h3>Settings</h3>
         <p>Here you can restore or backup your request history.</p>
-        <a {{action toggleHistory target=view}}>
-            {{view Ember.Checkbox checkedBinding="view.withoutResponse"}} ignore responses
+        <a {{action toggleResponse target=view}}>
+            {{view Ember.Checkbox checkedBinding="view.withoutResponse"}}
+             ignore responses
+        </a>&nbsp;&nbsp;
+        <a {{action toggleCleanHistory target=view}}>
+            {{view Ember.Checkbox checkedBinding="view.cleanHistory"}} clean history
         </a>
 
         <h4>History</h4>
@@ -167,7 +171,7 @@
             You can also import Apiary blueprint to the request history. 
             Note that blueprint will be sent to the Apiary server for parsing. 
             Same-origin policy has to be disabled for this to work, or you can import already parsed 
-            blueprint in <a target="_blank" href="http://apiblueprint.org/#examples">AST json format<</a>.
+            blueprint in <a target="_blank" href="http://apiblueprint.org/#examples">AST json format</a>.
         </p>
         <a class="button small" {{action saveSettings}}>OK</a>
         <a class="button small secondary" {{action closeModal}}>Cancel</a>
