@@ -1,7 +1,7 @@
 App = Ember.Application.create();
 
 
-//.. model .................................................
+//.. model ........................................................................................
 
 Message = Ember.Object.extend({
     headers: [],
@@ -18,6 +18,20 @@ Call = Ember.Object.extend({
     url: '',
     request: Message.create(),
     response: Response.create(),
+
+    serverPath: function() {
+        var i, j, url = this.get('url');
+        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 
+            && (j += i+3)+1 < url.length) {
+            return { server: url.substr(0,j), path: url.substr(j) };
+        } else {
+            return { server: null, path: url };
+        }
+    }.property('url'),
+
+    methodColor: function() {
+        return this.method === 'GET' ? 'label' : 'label success';
+    }.property('method')
 
     send: function(callback) {
         var self = this;
@@ -51,32 +65,24 @@ Call = Ember.Object.extend({
                 callback(self);
             }
         });
-    },
-
-    serverPath: function() {
-        var i, j, url = this.get('url');
-        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 && (j += i+3)+1 < url.length) {
-            return { server: url.substr(0,j), path: url.substr(j) };
-        } else {
-            return { server: null, path: url };
-        }
-    }.property('url'),
-
-    methodColor: function() {
-        return this.method === 'GET' ? 'label' : 'label success';
-    }.property('method')
+    }
 });
 
-//.. controller ............................................
+
+//.. controller ...................................................................................
 
 Methods = Ember.ArrayController.create({
-    content:['GET','POST','PUT','DELETE']
+    content: 
+        ['GET','POST','PUT','DELETE']
 });
+
 CommonHeaders = Ember.ArrayController.create({
-    content:['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
+    content: 
+        ['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
 });
+
 History = Ember.ArrayController.create({
-    serialize : function (withoutResponse) {
+    serialize: function(withoutResponse) {
         if(withoutResponse) {
             var data = JSON.parse(History.serialize());
             data.forEach(function(d) { d.response = null });
@@ -85,15 +91,15 @@ History = Ember.ArrayController.create({
             return JSON.stringify(History.toArray());
         }
     },
-    restore : function (serialized) {
+    restore: function(serialized) {
         var data = JSON.parse(serialized);
         History.clear()
         data.forEach(function(h) {History.addObject(Call.create(h))});    
     },
-    saveStorage : function() {
+    saveStorage: function() {
         localStorage.setItem('restclient-history', History.serialize())
     },
-    restoreStorage : function() {
+    restoreStorage: function() {
         var data = localStorage.getItem('restclient-history');
         if (data != null) {
             History.restore(data);
@@ -123,13 +129,11 @@ App.IndexController = Ember.Controller.extend({
             this.set('body',call.request.body);
             this.set('headers.content',Headers.clone(call.request.headers));
         },
-
         remove: function(call) {
             if (this.selected == call) this.set('selected', null);
             History.removeObject(call);
             History.saveStorage();
         },
-
         call: function(again) {
             this.set('headers.content',Headers.prepare(this.headers));
             var headers = this.headers.toArray();
@@ -154,21 +158,17 @@ App.IndexController = Ember.Controller.extend({
                 History.saveStorage();
             });
         },
-
         clean: function() {
             this.setProperties({url: '', method: 'GET', body: '' });
             this.set('headers.content',[]);
             this.set('selected', null);
         },
-
-        addHeader : function () {
+        addHeader: function () {
             this.headers.addObject({name: '', value: ''});
         },
-
         removeHeader: function(header) {
             this.headers.removeObject(header);
         },
-
         saveSettings: function() {
             History.restore(this.data);
             History.saveStorage();
@@ -191,7 +191,7 @@ App.IndexController = Ember.Controller.extend({
 });
 
 
-//.. view ..................................................
+//.. view .........................................................................................
 
 HeadersView = Ember.View.extend({
     templateName: 'headers'
@@ -203,10 +203,10 @@ ResponseView = Ember.View.extend({
     headers: false,
 
     actions: {
-        toggle : function() {
+        toggle: function() {
             this.set('headers', !this.headers);
         },
-        empty : function() {
+        empty: function() {
             return this.get('controller.headers').toArray().size < 1;
         }   
     }
@@ -269,8 +269,12 @@ FocusTextField = Ember.TextField.extend({
     }.on('didInsertElement')
 });
 
+Ember.TextField.reopen({
+    attributeBindings: ['list']
+});
 
-//.. router ................................................
+
+//.. router .......................................................................................
 
 App.Router.map(function() {
 });
@@ -300,7 +304,7 @@ App.IndexRoute = Ember.Route.extend({
 });
 
 
-//.. helpers ................................................
+//.. helpers ......................................................................................
 
 Helpers = {
     parseUrl: function(url) {
@@ -309,17 +313,16 @@ Helpers = {
         return a;
     },
     queryParam: function(key) {
-        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx control chars
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&");
         var match = location.search.match(new RegExp("[?&]" + key + "=([^&]+)(&|$)"));
         return match && decodeURIComponent(match[1].replace(/\+/g, " "));
     }
 }
 
 Headers = {
-
     plugins: {},
 
-    parse : function(object) {
+    parse: function(object) {
         var headers = [];
         if (object) {
             $.each(object, function(index, value) {
@@ -365,8 +368,6 @@ Headers.plugins.Authorization = function(header, headers) {
 }
 
 Apiary = {
-    lastAst: null,
-
     parseBlueprint: function(blueprint) {
         var astCall = Call.create(
             {
@@ -380,7 +381,6 @@ Apiary = {
         );
         astCall.send(function(call) {
             var response = JSON.parse(call.response.body);
-            Apiary.lastAst = response.ast;
             Apiary.parseAst(response.ast);
         });
     },
@@ -426,16 +426,9 @@ Apiary = {
         var astCall = Call.create({ url: url });
         astCall.send(function(call) {
             var ast = JSON.parse(call.response.body);
-            Apiary.lastAst = ast;
             if (ast) {
                 Apiary.parseAst(ast);
             }
         });
     }
 };
-
-Ember.TextField.reopen({
-    attributeBindings: ['list']
-});
-
-Array.prototype.clone = function() { return jQuery.extend(true, {}, this); };
