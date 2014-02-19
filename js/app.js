@@ -42,7 +42,9 @@ Call = Ember.Object.extend({
             beforeSend: function(xhr) {
                 if (self.request.headers) {
                     self.request.headers.toArray().forEach(function(h) {
-                        xhr.setRequestHeader(h.name, h.value);
+                        if (h.name.indexOf('_') != 0) {
+                            xhr.setRequestHeader(h.name, h.value);
+                        }
                     });
                 }
             },
@@ -130,23 +132,23 @@ App.IndexController = Ember.Controller.extend({
             this.set('headers.content',Headers.clone(call.request.headers));
         },
         remove: function(call) {
-            if (this.selected == call) this.set('selected', null);
             History.removeObject(call);
+            if (this.selected == call) this.send('select', History.get('lastObject'));
             History.saveStorage();
         },
         call: function(again) {
-            this.set('headers.content',Headers.prepare(this.headers));
-            var headers = this.headers.toArray();
-            headers.removeArrayObserver();
             var call = Call.create({
                 url: this.url,
                 method: this.method,
                 request: Message.create({
-                    body: this.body,
-                    headers: headers
+                    body: this.body
                 }),
                 response: Response.create()
             });
+            this.set('headers.content',Headers.prepare(this.headers, call));
+            var headers = this.headers.toArray();
+            headers.removeArrayObserver();
+            call.set("request.headers",headers);
             if (again) {
                 var i = History.indexOf(this.selected);
                 History.replace(i,1,[call]);
@@ -290,6 +292,7 @@ App.Router.map(function() {
 
 App.IndexRoute = Ember.Route.extend({
     setupController: function(controller, model) {
+        $(document).foundation();
         History.restoreStorage();
         if (History.get('length') == 0) {
             var astUrl = Helpers.queryParam('ast');
@@ -359,11 +362,11 @@ Headers = {
         }
         return hs;
     },
-    prepare: function(headers) {
-        var plugin, hs = []
+    prepare: function(headers, call) {
+        var plugin, hs = [];
         Headers.clone(headers).forEach(function (h) {
             if (typeof(plugin = Headers.plugins[h.name]) == "function") {
-                plugin(h, headers);
+                plugin(h, hs, call);
             }
             hs.push(h);
         }); 
