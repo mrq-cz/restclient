@@ -8,10 +8,19 @@ Headers.plugins.nonce = function(header) {
 }
 
 Headers.plugins.signature = function(header, headers, call) {
+    function escapeHTML(s) {
+        return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
+    }
+    function qualifyURL(url) {
+        var el= document.createElement('div');
+        el.innerHTML= '<a href="'+escapeHTML(url)+'">x</a>';
+        return el.firstChild.href;
+    }
     function stripServer(url) {
         var i,j;
         if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 && (j += i+3)+1 < url.length)
             return url.substr(j);
+        return stripServer(qualifyURL(url));
     }
 
     var nonce, key, apiKey;
