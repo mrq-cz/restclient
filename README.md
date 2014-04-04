@@ -10,4 +10,6 @@ Simple REST debugger written in javascript, that can be easily deployed everywhe
 
 - Responsive design
 
+- **[try live version now](http://mrq-cz.github.io/restclient)**
+
 
