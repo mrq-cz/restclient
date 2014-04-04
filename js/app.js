@@ -48,10 +48,13 @@ Call = Ember.Object.extend({
                     });
                 }
             },
-            success: function(data, status) {
+            success: function(data, status, xhr) {
                 var body;
-                if (typeof data == 'object') {
+                var content = xhr.getResponseHeader('content-type');
+                if (content.indexOf('json') != -1) {
                     body = JSON.stringify(data, undefined, 2);
+                } else if (content.indexOf('xml') != -1) {
+                    body = xhr.responseText;
                 } else {
                     body = data;
                 }
