@@ -61,7 +61,12 @@ Call = Ember.Object.extend({
                 self.set('response.body',body);
             },
             error: function(xhr) {
-                self.set('response.body',xhr.responseText);
+                var response = xhr.responseText;
+                self.set('response.body', response);
+                var content = xhr.getResponseHeader('content-type');
+                if (content.indexOf('json') != -1) {
+                    self.set('response.body', JSON.stringify(JSON.parse(response), undefined, 2));
+                }
             },
             complete: function(xhr, status) {
                 self.set('response.code',xhr.status);
