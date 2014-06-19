@@ -55,6 +55,7 @@ Call = Ember.Object.extend({
                     body = JSON.stringify(data, undefined, 2);
                 } else if (content.indexOf('xml') != -1) {
                     body = xhr.responseText;
+                    body = vkbeautify.xml(body);
                 } else {
                     body = data;
                 }
