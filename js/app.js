@@ -21,7 +21,7 @@ Call = Ember.Object.extend({
 
     serverPath: function() {
         var i, j, url = this.get('url');
-        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0 
+        if ((i = url.indexOf('://')) > 0 && (j = url.substr(i+3).indexOf('/')) > 0
             && (j += i+3)+1 < url.length) {
             return { server: url.substr(0,j), path: url.substr(j) };
         } else {
@@ -49,17 +49,21 @@ Call = Ember.Object.extend({
                 }
             },
             success: function(data, status, xhr) {
-                var body;
-                var content = xhr.getResponseHeader('content-type');
-                if (content.indexOf('json') != -1) {
-                    body = JSON.stringify(data, undefined, 2);
-                } else if (content.indexOf('xml') != -1) {
-                    body = xhr.responseText;
-                    body = vkbeautify.xml(body);
+                if (!data || data.trim().length === 0) {
+                  self.set('response.body', '');
                 } else {
-                    body = data;
+                  var body;
+                  var content = xhr.getResponseHeader('content-type');
+                  if (content.indexOf('json') != -1) {
+                      body = JSON.stringify(data, undefined, 2);
+                  } else if (content.indexOf('xml') != -1) {
+                      body = xhr.responseText;
+                      body = vkbeautify.xml(body);
+                  } else {
+                      body = data;
+                  }
+                  self.set('response.body',body);
                 }
-                self.set('response.body',body);
             },
             error: function(xhr) {
                 var response = xhr.responseText;
@@ -83,12 +87,12 @@ Call = Ember.Object.extend({
 //.. controller ...................................................................................
 
 Methods = Ember.ArrayController.create({
-    content: 
+    content:
         ['GET','POST','PUT','DELETE']
 });
 
 CommonHeaders = Ember.ArrayController.create({
-    content: 
+    content:
         ['Accept','Accept-Charset','Accept-Encoding','Accept-Language','Authorization','Content-Type']
 });
 
@@ -105,7 +109,7 @@ History = Ember.ArrayController.create({
     restore: function(serialized) {
         var data = JSON.parse(serialized);
         History.clear()
-        data.forEach(function(h) {History.addObject(Call.create(h))});    
+        data.forEach(function(h) {History.addObject(Call.create(h))});
     },
     saveStorage: function() {
         localStorage.setItem('restclient-history', History.serialize())
@@ -129,7 +133,7 @@ App.IndexController = Ember.Controller.extend({
     blueprint: null,
 
     success: function() {
-            return this.get('selected.response.code') < 300 ? 'label success' : 'label alert';    
+            return this.get('selected.response.code') < 300 ? 'label success' : 'label alert';
     }.property('selected.response.code'),
 
     actions : {
@@ -219,7 +223,7 @@ ResponseView = Ember.View.extend({
         },
         empty: function() {
             return this.get('controller.headers').toArray().size < 1;
-        }   
+        }
     }
 });
 
@@ -237,13 +241,13 @@ SettingsView = Ember.View.extend({
     actions: {
         toggleResponse: function() {
             this.set('withoutResponse', !this.withoutResponse);
-            this.set('controller.data', 
+            this.set('controller.data',
                 this.cleanHistory ? "[]" : History.serialize(this.withoutResponse)
                 );
         },
         toggleCleanHistory: function() {
             this.set('cleanHistory', !this.cleanHistory);
-            this.set('controller.data', 
+            this.set('controller.data',
                 this.cleanHistory ? "[]" : History.serialize(this.withoutResponse)
                 );
         }
@@ -315,14 +319,14 @@ App.IndexRoute = Ember.Route.extend({
                 into: 'application',
                 outlet: 'modal'
             });
-        },    
+        },
         closeModal: function() {
             return this.disconnectOutlet({
                 outlet: 'modal',
                 parentView: 'application'
             });
         }
-    }   
+    }
 });
 
 
@@ -378,8 +382,8 @@ Headers = {
                 plugin(h, hs, call);
             }
             hs.push(h);
-        }); 
-        return hs; 
+        });
+        return hs;
     }
 };
 
