@@ -49,7 +49,7 @@ Call = Ember.Object.extend({
                 }
             },
             success: function(data, status, xhr) {
-                if (!data || data.trim().length === 0) {
+                if (!data && data.trim().length === 0) {
                   self.set('response.body', '');
                 } else {
                   var body;
@@ -68,9 +68,11 @@ Call = Ember.Object.extend({
             error: function(xhr) {
                 var response = xhr.responseText;
                 self.set('response.body', response);
-                var content = xhr.getResponseHeader('content-type');
+                var content = xhr.getResponseHeader('content-type') || "";
                 if (content.indexOf('json') != -1) {
                     self.set('response.body', JSON.stringify(JSON.parse(response), undefined, 2));
+                } else if (xhr.status === 0 && response.length === 0) {
+                    self.set('response.body', 'request failed, possibly intercepted by cors policy');
                 }
             },
             complete: function(xhr, status) {
@@ -158,13 +160,13 @@ App.IndexController = Ember.Controller.extend({
                 }),
                 response: Response.create()
             });
-            this.set('headers.content',Headers.prepare(this.headers, call));
+            this.set('headers.content', Headers.prepare(this.headers, call));
             var headers = this.headers.toArray();
             headers.removeArrayObserver();
-            call.set("request.headers",headers);
+            call.set("request.headers", headers);
             if (again) {
                 var i = History.indexOf(this.selected);
-                History.replace(i,1,[call]);
+                History.replace(i, 1, [call]);
             } else {
                 History.addObject(call);
             }
